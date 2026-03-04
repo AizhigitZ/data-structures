@@ -1158,28 +1158,30 @@ function Log({ entries, color }) {
   );
 }
 
-function TheoryCard({ concept, color }) {
+function TheoryCard({ concept, color, active }) {
   const [hov, setHov] = useState(false);
+  const isSelected = active || hov;
   return (
     <div
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? `rgba(6,15,35,0.97)` : G.dim,
-        border: `1px solid ${hov ? color + "44" : color + "20"}`,
+        background: isSelected ? `rgba(6,15,35,0.97)` : G.dim,
+        border: `1px solid ${isSelected ? color + "88" : color + "20"}`,
         borderRadius: G.radius, padding: 20,
         borderTop: `2px solid ${color}`,
         transition: "all 0.25s",
-        boxShadow: hov ? G.glow(color, 12) : "none",
+        boxShadow: isSelected ? G.glow(color, 12) : "none",
+        transform: active ? "translateY(-2px)" : "none",
       }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#e8f4ff", fontFamily: G.font }}>{concept.name}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: active ? color : "#e8f4ff", fontFamily: G.font }}>{concept.name}</span>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <Badge color={color}>T: {concept.time}</Badge>
           <Badge color={G.mutedHi + "ff"}>S: {concept.space}</Badge>
         </div>
       </div>
-      <p style={{ margin: 0, fontSize: 12, color: "#6a88aa", lineHeight: 1.8, fontFamily: G.font }}>{concept.desc}</p>
+      <p style={{ margin: 0, fontSize: 12, color: isSelected ? "#a8c6e0" : "#6a88aa", lineHeight: 1.8, fontFamily: G.font }}>{concept.desc}</p>
     </div>
   );
 }
@@ -1324,12 +1326,12 @@ function SearchingSection() {
     <div>
       <SectionHeader title="Searching" icon="🔍" color={C} simple="A way to find a specific item in a list." />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div>
-          <div style={{ background: G.panel, border: `1px solid ${G.border}`, borderRadius: 10, padding: 18, marginBottom: 12 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{ background: G.panel, border: `1px solid ${G.border}`, borderRadius: G.radius, padding: 20, marginBottom: 14 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
               <Select value={addPos} onChange={setAddPos} color={C}
                 options={[{ value: "start", label: "Insert: Start" }, { value: "end", label: "Insert: End" }, { value: "custom", label: "Insert: Index N" }]} />
               <Input value={addVal} onChange={setAddVal} placeholder="value" width={70} onEnter={insertAt} />
@@ -1350,7 +1352,7 @@ function SearchingSection() {
                       width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center",
                       flexDirection: "column", gap: 2, background: c.bg, border: `1px solid ${c.border}`,
                       borderRadius: 7, color: c.color, cursor: "pointer", transition: "all 0.25s",
-                      fontSize: 13, fontFamily: G.font, fontWeight: 700, userSelect: "none"
+                      fontSize: 13, fontFamily: G.mono, fontWeight: 700, userSelect: "none"
                     }}>
                     <span style={{ fontSize: 8, color: G.muted }}>[{i}]</span>{v}
                   </div>
@@ -1360,11 +1362,17 @@ function SearchingSection() {
             <div style={{ fontSize: 10, color: G.muted }}>Click any cell to delete</div>
           </div>
           <Log entries={log} color={C} />
-        </div>
-      )}
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={algo === (c.name.toLowerCase().includes("linear") ? "linear" : "binary")}
+              />
+            ))}
+          </div>
         </div>
       )}
       {tab === "code" && (
@@ -1494,7 +1502,7 @@ function SortingSection() {
     <div>
       <SectionHeader title="Sorting" icon="↕" color={C} simple="Putting items in order (e.g., smallest to largest)." />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div>
@@ -1532,11 +1540,17 @@ function SortingSection() {
             <div style={{ fontSize: 10, color: G.muted }}>Click any bar to delete</div>
           </div>
           <Log entries={log} color={C} />
-        </div>
-      )}
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={algo === c.name.split(" ")[0].toLowerCase()}
+              />
+            ))}
+          </div>
         </div>
       )}
       {tab === "code" && (
@@ -1624,7 +1638,7 @@ function StackSection() {
     <div>
       <SectionHeader title="Stack (LIFO)" icon="⊞" color={C} simple='A "stack" of data — only work with the top item.' />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Stack Demo" }, { id: "rpn", label: "⚙ RPN Evaluator" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Stack Demo" }, { id: "rpn", label: "⚙ RPN Evaluator" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div style={{ background: G.panel, border: `1px solid ${G.border}`, borderRadius: 10, padding: 18 }}>
@@ -1658,6 +1672,17 @@ function StackSection() {
               <div style={{ fontSize: 10, color: G.muted, marginTop: 4, textAlign: "center" }}>← bottom</div>
             </div>
             <div style={{ flex: 1, minWidth: 200 }}><Log entries={log} color={C} /></div>
+          </div>
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={c.name.toLowerCase() === "push" || c.name.toLowerCase() === "pop"}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -1694,14 +1719,21 @@ function StackSection() {
               Result = {rpnResult}
             </div>
           )}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={c.name.toLowerCase().includes("rpn") || c.name.toLowerCase().includes("polish")}
+              />
+            ))}
+          </div>
         </div>
       )}
 
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
-        </div>
-      )}
+
       {tab === "code" && (
         <CodePanel color={C} snippets={[
           { label: "Stack Class", key: "stack_ops" },
@@ -1776,7 +1808,7 @@ function LinkedListSection() {
     <div>
       <SectionHeader title="Linked List" icon="⬡" color={C} simple="A chain of data where each point points to the next one." />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div>
@@ -1830,11 +1862,17 @@ function LinkedListSection() {
             <div style={{ fontSize: 10, color: G.muted, marginTop: 4 }}>Click any node to delete it</div>
           </div>
           <Log entries={log} color={C} />
-        </div>
-      )}
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={c.name.toLowerCase().includes(mode)}
+              />
+            ))}
+          </div>
         </div>
       )}
       {tab === "code" && (
@@ -1922,7 +1960,7 @@ function HashSection() {
     <div>
       <SectionHeader title="Hash Function" icon="#" color={C} simple="A shortcut to find data instantly using a unique code." />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div>
@@ -1981,11 +2019,17 @@ function HashSection() {
             <div style={{ fontSize: 10, color: G.muted, marginTop: 8 }}>Click any entry to delete it</div>
           </div>
           <Log entries={log} color={C} />
-        </div>
-      )}
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={c.name.toLowerCase().includes(mode)}
+              />
+            ))}
+          </div>
         </div>
       )}
       {tab === "code" && (
@@ -2070,7 +2114,7 @@ function QueueSection() {
     <div>
       <SectionHeader title="Queue (FIFO)" icon="⇒" color={C} simple='A "line" of data — first one in is first one out.' />
       <TabBar color={C} active={tab} setActive={setTab}
-        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "theory", label: "📐 Theory" }, { id: "code", label: "{ } Python Code" }]} />
+        tabs={[{ id: "demo", label: "▶ Demo" }, { id: "code", label: "{ } Python Code" }]} />
 
       {tab === "demo" && (
         <div>
@@ -2156,11 +2200,17 @@ function QueueSection() {
             )}
           </div>
           <Log entries={log} color={C} />
-        </div>
-      )}
-      {tab === "theory" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {theory.map(c => <TheoryCard key={c.name} concept={c} color={C} />)}
+          <div style={{ marginTop: 20, fontSize: 10, color: G.mutedHi, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono, marginBottom: 12 }}>📐 Complexity Reference</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+            {theory.map(c => (
+              <TheoryCard
+                key={c.name}
+                concept={c}
+                color={C}
+                active={c.name.toLowerCase().includes(mode)}
+              />
+            ))}
+          </div>
         </div>
       )}
       {tab === "code" && (
@@ -2188,75 +2238,76 @@ function Overview({ onSelect }) {
   const clrs = ["#4ade80", "#a3e635", "#fbbf24", "#fb923c", "#f87171", "#c084fc"];
 
   return (
-    <div style={{ animation: "fadeSlideIn 0.4s ease" }}>
+    <div className="fade-in">
       {/* Hero */}
       <div style={{
-        marginBottom: 36, padding: "36px 40px",
-        background: "linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(129,140,248,0.06) 50%, rgba(56,189,248,0.04) 100%)",
-        border: "1px solid rgba(56,189,248,0.15)",
-        borderRadius: 20, position: "relative", overflow: "hidden",
+        marginBottom: 40, padding: "44px 48px",
+        background: "linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(129,140,248,0.06) 50%, rgba(192,132,252,0.04) 100%)",
+        border: "1px solid rgba(56,189,248,0.12)",
+        borderRadius: 24, position: "relative", overflow: "hidden",
       }}>
-        {/* Decorative glow orb */}
         <div style={{
-          position: "absolute", right: -60, top: -60,
-          width: 260, height: 260, borderRadius: "50%",
-          background: "radial-gradient(circle, #38bdf812 0%, transparent 70%)",
-          pointerEvents: "none",
+          position: "absolute", right: -80, top: -80, width: 320, height: 320, borderRadius: "50%",
+          background: "radial-gradient(circle, #818cf815 0%, transparent 70%)", pointerEvents: "none",
         }} />
         <div style={{
-          fontSize: 11, color: "#38bdf8", letterSpacing: 3, textTransform: "uppercase",
-          fontFamily: G.mono, marginBottom: 14, fontWeight: 600,
-        }}>◈ Interactive Dashboard</div>
+          position: "absolute", left: -40, bottom: -60, width: 200, height: 200, borderRadius: "50%",
+          background: "radial-gradient(circle, #38bdf810 0%, transparent 70%)", pointerEvents: "none",
+        }} />
+        <div style={{
+          fontSize: 10, color: "#38bdf8", letterSpacing: 4, textTransform: "uppercase",
+          fontFamily: G.mono, marginBottom: 16, fontWeight: 600,
+        }}>◈ Interactive Learning Dashboard</div>
         <h1 style={{
-          margin: "0 0 10px", fontSize: 38, fontWeight: 900,
-          fontFamily: G.font, letterSpacing: -1.5, lineHeight: 1.15,
+          margin: "0 0 14px", fontSize: 42, fontWeight: 900,
+          fontFamily: G.font, letterSpacing: -1.5, lineHeight: 1.1,
           color: "#f0f8ff",
         }}>
           Data Structures
           <span style={{
             display: "block",
-            background: "linear-gradient(135deg, #38bdf8, #818cf8)",
+            background: "linear-gradient(135deg, #38bdf8, #818cf8, #c084fc)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             backgroundClip: "text",
           }}>& Algorithms</span>
         </h1>
         <p style={{
-          color: G.mutedHi, fontSize: 13, maxWidth: 500, lineHeight: 1.8,
+          color: "#5a7aa8", fontSize: 14, maxWidth: 520, lineHeight: 1.8,
           fontFamily: G.font, margin: 0,
         }}>
-          Live demos, complexity theory cards, and full Python implementations — all 6 core CS topics in one place.
+          Live demos with step-by-step visualization, complexity theory, and full Python implementations — all 6 core topics in one place.
         </p>
       </div>
 
       {/* Topic Cards */}
       <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-        gap: 14, marginBottom: 32,
+        display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 16, marginBottom: 40,
       }}>
-        {topics.map(t => (
+        {topics.map((t, idx) => (
           <div key={t.id} onClick={() => onSelect(t.id)}
+            className="fade-in"
             style={{
-              background: G.dim, border: `1px solid ${t.color}25`,
-              borderRadius: 14, padding: "22px 20px",
-              cursor: "pointer", transition: "all 0.22s",
+              background: G.dim, border: `1px solid ${t.color}20`,
+              borderRadius: 16, padding: "24px 22px",
+              cursor: "pointer", transition: "all 0.25s ease",
               borderTop: `2px solid ${t.color}`,
-              position: "relative", overflow: "hidden",
+              animationDelay: `${idx * 0.06}s`,
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = t.color + "12";
-              e.currentTarget.style.boxShadow = G.glow(t.color, 14);
-              e.currentTarget.style.borderColor = t.color + "55";
-              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.background = t.color + "10";
+              e.currentTarget.style.boxShadow = G.glow(t.color, 16);
+              e.currentTarget.style.borderColor = t.color + "50";
+              e.currentTarget.style.transform = "translateY(-3px)";
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = G.dim;
               e.currentTarget.style.boxShadow = "none";
-              e.currentTarget.style.borderColor = t.color + "25";
+              e.currentTarget.style.borderColor = t.color + "20";
               e.currentTarget.style.transform = "none";
             }}>
-            <div style={{ fontSize: 30, marginBottom: 12 }}>{t.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: t.color, marginBottom: 6, fontFamily: G.font }}>{t.label}</div>
+            <div style={{ fontSize: 32, marginBottom: 14 }}>{t.icon}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: t.color, marginBottom: 6, fontFamily: G.font }}>{t.label}</div>
             <div style={{ fontSize: 11, color: G.mutedHi, fontFamily: G.font }}>Demo · Theory · Code →</div>
           </div>
         ))}
@@ -2265,18 +2316,18 @@ function Overview({ onSelect }) {
       {/* Big-O Chart */}
       <div style={{
         background: G.dim, border: `1px solid ${G.border}`,
-        borderRadius: 16, padding: 26,
+        borderRadius: 18, padding: 30,
       }}>
-        <div style={{ fontSize: 10, color: G.mutedHi, marginBottom: 18, textTransform: "uppercase", letterSpacing: 2, fontFamily: G.mono }}>⏱ Big-O Complexity Reference</div>
+        <div style={{ fontSize: 10, color: G.mutedHi, marginBottom: 20, textTransform: "uppercase", letterSpacing: 2.5, fontFamily: G.mono, fontWeight: 600 }}>⏱ Big-O Complexity Reference</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {bigO.map((o, i) => (
             <div key={o.n} style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 88, fontSize: 12, fontFamily: G.mono, color: clrs[i], textAlign: "right", flexShrink: 0, fontWeight: 700 }}>{o.n}</div>
-              <div style={{ flex: 1, height: 20, background: "rgba(4,8,20,0.8)", borderRadius: 6, overflow: "hidden", border: "1px solid " + G.border }}>
+              <div style={{ flex: 1, height: 22, background: "rgba(4,8,20,0.8)", borderRadius: 6, overflow: "hidden", border: "1px solid " + G.border }}>
                 <div style={{
                   width: `${o.bar}%`, height: "100%",
-                  background: `linear-gradient(90deg, ${clrs[i]}99, ${clrs[i]}44)`,
-                  borderRadius: 6, transition: "width 0.6s ease",
+                  background: `linear-gradient(90deg, ${clrs[i]}aa, ${clrs[i]}44)`,
+                  borderRadius: 6, transition: "width 0.8s ease",
                 }} />
               </div>
               <div style={{ width: 230, fontSize: 11, color: G.mutedHi, flexShrink: 0, fontFamily: G.font }}>{o.ex}</div>
@@ -2289,167 +2340,117 @@ function Overview({ onSelect }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ROOT APP
+   ROOT APP — Horizontal Top Navbar
 ══════════════════════════════════════════════════════════════ */
 const sectionMap = { searching: SearchingSection, sorting: SortingSection, stack: StackSection, linkedlist: LinkedListSection, hash: HashSection, queue: QueueSection };
 
 export default function App() {
   const [active, setActive] = useState("overview");
-  const [sideOpen, setSideOpen] = useState(true);
   const ActiveSection = active !== "overview" ? sectionMap[active] : null;
   const activeTopic = topics.find(t => t.id === active);
 
   return (
     <div style={{
-      display: "flex", height: "100vh",
+      display: "flex", flexDirection: "column", height: "100vh",
       background: G.bg,
-      backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(56,189,248,0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(129,140,248,0.04) 0%, transparent 60%)",
+      backgroundImage: "radial-gradient(ellipse at 20% 80%, rgba(56,189,248,0.03) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(129,140,248,0.03) 0%, transparent 55%)",
       color: G.text, fontFamily: G.font, overflow: "hidden",
     }}>
-      {/* ── Sidebar ── */}
-      <aside style={{
-        width: sideOpen ? 230 : 60, flexShrink: 0,
-        background: "rgba(4,8,22,0.95)",
-        borderRight: `1px solid ${G.border}`,
-        backdropFilter: "blur(12px)",
-        display: "flex", flexDirection: "column",
-        transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
-        overflow: "hidden",
+      {/* ── Top Navbar ── */}
+      <header style={{
+        flexShrink: 0,
+        padding: "0 32px",
+        height: 60,
+        display: "flex", alignItems: "center", gap: 0,
+        background: "rgba(3,6,18,0.92)",
+        borderBottom: `1px solid ${G.border}`,
+        backdropFilter: "blur(16px)",
+        zIndex: 100,
       }}>
         {/* Logo */}
-        <div style={{
-          padding: sideOpen ? "20px 16px 16px" : "20px 10px 16px",
-          borderBottom: `1px solid ${G.border}`,
-          display: "flex", alignItems: "center", gap: 12,
-        }}>
+        <div
+          onClick={() => setActive("overview")}
+          style={{
+            display: "flex", alignItems: "center", gap: 10,
+            cursor: "pointer", marginRight: 32, flexShrink: 0,
+          }}>
           <div style={{
-            width: 34, height: 34, flexShrink: 0,
+            width: 32, height: 32,
             background: "linear-gradient(135deg, #38bdf830, #818cf820)",
-            border: "1px solid #38bdf840", borderRadius: 9,
+            border: "1px solid #38bdf840", borderRadius: 8,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 16, boxShadow: G.glow("#38bdf8", 8),
+            fontSize: 14, boxShadow: G.glow("#38bdf8", 6),
           }}>⌬</div>
-          {sideOpen && (
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 900, color: "#f0f8ff", fontFamily: G.font, letterSpacing: -0.3 }}>DS&amp;A</div>
-              <div style={{ fontSize: 9, color: G.mutedHi, letterSpacing: 2, textTransform: "uppercase" }}>Dashboard</div>
-            </div>
-          )}
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: "#f0f8ff", fontFamily: G.font, letterSpacing: -0.3, lineHeight: 1.1 }}>DS&amp;A</div>
+            <div style={{ fontSize: 8, color: G.muted, letterSpacing: 2.5, textTransform: "uppercase", fontFamily: G.mono }}>Dashboard</div>
+          </div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "12px 0", overflowY: "auto" }}>
-          {/* Overview */}
-          <button onClick={() => setActive("overview")}
+        {/* Divider */}
+        <div style={{ width: 1, height: 28, background: G.border, marginRight: 20, flexShrink: 0 }} />
+
+        {/* Nav Items */}
+        <nav style={{ display: "flex", alignItems: "center", gap: 2, flex: 1, overflowX: "auto" }}>
+          {/* Overview tab */}
+          <button
+            onClick={() => setActive("overview")}
             style={{
-              width: "100%", display: "flex", alignItems: "center",
-              gap: 10, padding: sideOpen ? "11px 16px" : "11px 13px",
-              background: active === "overview" ? "rgba(56,189,248,0.1)" : "transparent",
-              borderLeft: `3px solid ${active === "overview" ? "#38bdf8" : "transparent"}`,
-              border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "7px 14px", fontSize: 12, fontFamily: G.font,
+              border: "none", cursor: "pointer", whiteSpace: "nowrap",
+              borderRadius: 8, fontWeight: active === "overview" ? 700 : 500,
+              background: active === "overview" ? "rgba(56,189,248,0.12)" : "transparent",
               color: active === "overview" ? "#38bdf8" : G.mutedHi,
-              fontSize: 12.5, fontFamily: G.font, fontWeight: active === "overview" ? 700 : 400,
-              transition: "all 0.15s", textAlign: "left", whiteSpace: "nowrap",
-              boxShadow: active === "overview" ? "inset 0 0 20px rgba(56,189,248,0.05)" : "none",
+              transition: "all 0.18s",
+              boxShadow: active === "overview" ? G.glow("#38bdf8", 6) : "none",
             }}>
-            <span style={{ fontSize: 17, flexShrink: 0 }}>◈</span>
-            {sideOpen && "Overview"}
+            <span style={{ fontSize: 14 }}>◈</span> Overview
           </button>
 
-          {sideOpen && (
-            <div style={{
-              padding: "10px 16px 4px", fontSize: 9,
-              color: G.muted, textTransform: "uppercase", letterSpacing: 2.5, fontFamily: G.mono,
-            }}>Topics</div>
-          )}
-
-          {topics.map(t => (
-            <button key={t.id} onClick={() => setActive(t.id)}
-              style={{
-                width: "100%", display: "flex", alignItems: "center",
-                gap: 10, padding: sideOpen ? "11px 16px" : "11px 13px",
-                background: active === t.id ? t.color + "14" : "transparent",
-                borderLeft: `3px solid ${active === t.id ? t.color : "transparent"}`,
-                border: "none", cursor: "pointer",
-                color: active === t.id ? t.color : G.mutedHi,
-                fontSize: 12.5, fontFamily: G.font, fontWeight: active === t.id ? 700 : 400,
-                transition: "all 0.15s", textAlign: "left", whiteSpace: "nowrap",
-                boxShadow: active === t.id ? `inset 0 0 20px ${t.color}08` : "none",
-              }}
-              onMouseEnter={e => { if (active !== t.id) e.currentTarget.style.color = t.color + "cc"; }}
-              onMouseLeave={e => { if (active !== t.id) e.currentTarget.style.color = G.mutedHi; }}>
-              <span style={{ fontSize: 17, flexShrink: 0 }}>{t.icon}</span>
-              {sideOpen && t.label}
-            </button>
-          ))}
+          {/* Topic tabs */}
+          {topics.map(t => {
+            const isActive = active === t.id;
+            return (
+              <button key={t.id}
+                onClick={() => setActive(t.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 14px", fontSize: 12, fontFamily: G.font,
+                  border: "none", cursor: "pointer", whiteSpace: "nowrap",
+                  borderRadius: 8, fontWeight: isActive ? 700 : 500,
+                  background: isActive ? t.color + "15" : "transparent",
+                  color: isActive ? t.color : G.mutedHi,
+                  transition: "all 0.18s",
+                  boxShadow: isActive ? G.glow(t.color, 6) : "none",
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = t.color + "cc"; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = isActive ? t.color : G.mutedHi; }}>
+                <span style={{ fontSize: 14 }}>{t.icon}</span> {t.label}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Footer */}
-        {sideOpen && (
+        {/* Right side info */}
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0, marginLeft: 16 }}>
           <div style={{
-            padding: "12px 16px", borderTop: `1px solid ${G.border}`,
-            fontSize: 10, color: G.muted, fontFamily: G.mono, lineHeight: 1.6,
-          }}>
-            <div>Due: 05-03-2026</div>
-            <div style={{ marginTop: 2, opacity: 0.7 }}>≤ 2 students / group</div>
-          </div>
-        )}
-
-        {/* Toggle */}
-        <button onClick={() => setSideOpen(s => !s)}
-          style={{
-            padding: "11px", background: "transparent", border: "none",
-            borderTop: `1px solid ${G.border}`, cursor: "pointer",
-            color: G.mutedHi, fontSize: 15, fontFamily: G.font,
-            transition: "color 0.15s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = "#38bdf8"}
-          onMouseLeave={e => e.currentTarget.style.color = G.mutedHi}>
-          {sideOpen ? "◂" : "▸"}
-        </button>
-      </aside>
-
-      {/* ── Main ── */}
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-        {/* Topbar */}
-        <div style={{
-          padding: "14px 28px",
-          borderBottom: `1px solid ${G.border}`,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "rgba(4,8,22,0.8)",
-          backdropFilter: "blur(12px)",
-          flexShrink: 0,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {activeTopic && (
-              <span style={{
-                width: 28, height: 28, borderRadius: 7,
-                background: activeTopic.color + "18",
-                border: `1px solid ${activeTopic.color}44`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15,
-              }}>{activeTopic.icon}</span>
-            )}
-            <span style={{
-              fontSize: 15, fontWeight: 700, fontFamily: G.font,
-              color: activeTopic ? activeTopic.color : "#f0f8ff",
-            }}>
-              {active === "overview" ? "Overview" : activeTopic?.label}
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: G.muted, fontFamily: G.mono }}>DS&amp;A Dashboard</span>
-            <div style={{
-              padding: "4px 14px",
-              background: "linear-gradient(135deg, #38bdf812, #818cf808)",
-              border: "1px solid #38bdf830", borderRadius: 20,
-              fontSize: 11, color: "#38bdf8", fontFamily: G.mono, fontWeight: 600,
-            }}>05 · 03 · 2026</div>
-          </div>
+            padding: "5px 14px",
+            background: "linear-gradient(135deg, #38bdf810, #818cf808)",
+            border: "1px solid #38bdf825", borderRadius: 20,
+            fontSize: 10, color: "#38bdf8", fontFamily: G.mono, fontWeight: 600,
+          }}>Due: 05 · 03 · 2026</div>
         </div>
+      </header>
 
-        {/* Content */}
-        <div style={{ padding: "32px 36px", flex: 1 }}>
+      {/* ── Scrollable Content ── */}
+      <main style={{
+        flex: 1, overflowY: "auto", overflowX: "hidden",
+      }}>
+        <div style={{
+          maxWidth: 1100, margin: "0 auto",
+          padding: "36px 40px 60px",
+        }}>
           {active === "overview"
             ? <Overview onSelect={setActive} />
             : ActiveSection && <ActiveSection />}
